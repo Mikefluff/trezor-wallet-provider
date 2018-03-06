@@ -24,7 +24,7 @@
   "homepage": "https://github.com/daonomic/trezor-wallet-provider#readme",
   "dependencies": {
     "bip32-path": "^0.4.2",
-    "trezor.js-node": "^6.11.3",
+    "trezor.js": "6.15.9",
     "web3-provider-engine": "^13.6.5"
   }
 }
