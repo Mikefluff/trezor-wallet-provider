@@ -4,7 +4,8 @@ var HookedWalletSubprovider = require('web3-provider-engine/subproviders/hooked-
 var Transaction = require('ethereumjs-tx');
 var trezor = require('trezor.js');
 var util = require('util');
-var bippath = require('bip32-path')
+var bippath = require('bip32-path');
+var stripHexPrefix = ('strip-hex-prefix');
 
 var debug = false;
 
@@ -115,7 +116,7 @@ this.list.on('connectUnacquired', function (device) {
 	    .catch(cb);
 	}
 
-	signTransaction(txParams, cb) {
+	async signTransaction(txParams, cb) {
 		var self = this;
 		this.inTrezorSession(
 			session => session.signEthTx(self.path, normalize(txParams.nonce), normalize(txParams.gasPrice), normalize(txParams.gas), normalize(txParams.to), normalize(txParams.value), normalize(txParams.data))
@@ -133,6 +134,22 @@ this.list.on('connectUnacquired', function (device) {
 			   s: buffer(result.s)
 			});
 			cb(null, '0x' + tx.serialize().toString('hex'));
+		})
+		.catch(cb);
+	}
+
+	async signPersonalMessage(msgData, cb) {
+                var self = this;
+                this.inTrezorSession(
+                        session => session.ethereumSignMessage(self.path, stripHexPrefix(msgData.data))
+		)
+		.then(result => {
+		       const v = parseInt(result.v, 10) - 27;
+                       let vHex = v.toString(16);
+                       if (vHex.length < 2) {
+                         vHex = `0${v}`;
+                       }
+		       cb(null,`0x${result.r}${result.s}${vHex}`);
 		})
 		.catch(cb);
 	}
